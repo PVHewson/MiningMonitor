@@ -58,7 +58,7 @@ function constructPage(data) {
     history.classList.remove('hidden');
   }
 
-  if (data.luxorLastCheck.miners.filter(miner => miner.details.status !== 'Active').length > 0) {
+  if (data.luxorLastCheck && data.luxorLastCheck.miners.filter(miner => miner.details.status !== 'Active').length > 0) {
     const btnAlert = document.getElementById("btnAlert");
     btnAlert.classList.remove('hidden');
     btnAlert.addEventListener('click', sendAlert(data));

@@ -19,44 +19,24 @@ const alarmListener = (alarm) => {
 const notificationButtonClicked = async (notificationId, buttonIndex) => {
   switch (notificationId) {
     case 'luxorProblem' :
-      const tab = await getCurrentTab();
-      chrome.scripting.executeScript({
-        target: {tabId: tab.id},
-        files: ['content.js']
-      });
-      // chrome.scripting.executeScript({
-      //   target: {tabId: tab.id},
-      //   files: ['content.js']
-      // });
-
-      // const issues = latestMinerCheck.data.miners.nodes.filter(miner => miner.details.status == 'Active')
-      // .map(miner => `${miner.workerName} is ${miner.details.status}`)
-      // .toString();
-      //chrome.storage.sync.set({luxorOption : 'alert-host'}, () => chrome.runtime.openOptionsPage());      
-
-      // chrome.storage.sync.get("luxorHostEmail", (data) => {
-      //   if(data.luxorHostEmail) {
-      //     const issues = latestMinerCheck.data.miners.nodes
-      //     .map(node => `${node.workerName} is ${node.details.status}`)
-      //     .toString();
-      //     clients.openWindow(`https://mail.google.com/mail/u/0/?fs=1&to=${data.luxorHostEmail}&su=Miner%20offline&body=${issues}&tf=cm`, '__blank')        
-      //   }
-      // });      
-  
+      chrome.storage.sync.set({luxorOption : 'alert-host'}, () => chrome.runtime.openOptionsPage());       
       break;
     default :
       console.log(`Unmanaged notification button for '${notificationId}'`)
   }
 }
 
-const minercheckNotification = (notificationId) => {
- // console.log('minercheckNotification has fired')
-};
 const minerErrorNotification = (notificationId) => {
-  // console.log('minercheckNotification has fired')
- };
+  console.log(chrome.runtime.lastError)
+};
  
 const checkMiner = async () => {
+  // const tab = await getCurrentTab();
+  // chrome.scripting.executeScript({
+  //   target: {tabId: tab.id},
+  //   files: ['content.js']
+  // });
+
   chrome.storage.sync.get("luxorApiKey", async (data) => {
     console.log('check miner');
     if (data.luxorApiKey == undefined) {
@@ -93,28 +73,31 @@ const checkMiner = async () => {
           requireInteraction: false,
           items: responseJSON.errors.map( error => { return {title: '', message: error.extensions.exception.detail}})
         };
-        chrome.notifications.create('', notificationOptions, minerErrorNotification);
+        await chrome.notifications.clear('luxorError');
+        chrome.notifications.create('LuxorError', notificationOptions, minerErrorNotification);
     
     } else {
       const miners = latestMinerCheck.data.miners.nodes;
       const activeMiners = miners.filter(miner => miner.details.status == 'Active');
       const problemMiners = miners.filter(miner => miner.details.status !== 'Active');
       luxorLastCheck.miners = miners;
-      await chrome.notifications.clear('luxorProblem');
+      await chrome.notifications.clear('luxorActive');
 
-      if(activeMiners.length > 0) {
+      if(problemMiners.length > 0) {
         let notificationOptions = {
           type: 'list', 
           iconUrl: './images/get_started16.png',
           message: `Miner issues detected`, 
           title: 'Mine monitor: Miner issues detected',
           requireInteraction: true,
-          items: activeMiners.map( miner => { return {title: miner.workerName, message: miner.details.status}})
+          items: problemMiners.map( miner => { return {title: miner.workerName, message: miner.details.status}})
         };
+        await chrome.notifications.clear('luxorProblem');
         chrome.storage.sync.get("luxorHostEmail", (data) => {
           if(data.luxorHostEmail) {
             notificationOptions.buttons = [{title: 'Alert Host'}];
           }
+          console.log('create alert');
           chrome.notifications.create('luxorProblem', notificationOptions);  
         });      
   
@@ -128,7 +111,7 @@ const checkMiner = async () => {
             requireInteraction: false,
             items: activeMiners.map( miner => { return {title: miner.workerName, message: miner.details.status}})
           };
-          chrome.notifications.create('', notificationOptions, minercheckNotification);  
+          chrome.notifications.create('luxorActive', notificationOptions);  
         }    
       } 
     }
