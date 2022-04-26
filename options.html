@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="options.css">
+  <title>MiningMonitor Options</title>
+</head>
+
+<body class="dark">
+  <div>
+    <div id="mainContent" class="full-screen">
+      <div class="header" id="header"></div>
+      <div id="inputs" class="hidden">
+        <div><label for="apikey">Luxor API Key</label><input id="apikey"></div>
+        <div><label for="frequency">Check every</label> <input id="frequency"> <span class="info">minutes</span></div>    
+        <div><label for="hostEmail">Host Email</label> <input id="hostEmail" placeholder="support@miner-hosting.com"></div>    
+        <div><label for="notify">Only notify on issues</label> <input type="checkbox" id="notifyIssuesOnly"></div>    
+      </div>
+      <div id="actions" class="hidden">
+        <button id="btnSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="options.js"></script>
+
+</html>
